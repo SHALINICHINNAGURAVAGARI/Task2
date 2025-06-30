@@ -1,206 +1,130 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DataGrid from './DataGrid.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function ProductEntryTable({ onAdd }) {
   const navigate = useNavigate();
+
+  // State to control showing the 5x5 grid
+  const [showGrid, setShowGrid] = useState(false);
   
-  // State to store the current input values
-  const [form, setForm] = useState({
-    category: '',
-    gender: '',
-    age: '',
-    price: '',
-    discount: ''
-  });
+  // State to force DataGrid re-render
+  const [gridKey, setGridKey] = useState(0);
 
-  // State for error message
-  const [error, setError] = useState('');
+  // State for grid error message
+  const [gridError, setGridError] = useState('');
 
-  // Handle input changes for the form fields
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    setError('');
+  // Handle Add button click - directly show the grid
+  const handleAdd = () => {
+    setGridKey(prev => prev + 1);
+    setShowGrid(true);
   };
 
-  // Handle form submission when ever user clicks Add button
-  const handleAdd = (e) => {
-    e.preventDefault();
+  // Handle grid submission from DataGrid component
+  const handleGridSubmit = (entries) => {
+    // Clear any grid errors messages
+    setGridError('');
     
-    // Validation: Check if all fields are filled
-    if (form.category.trim() === '') {
-      setError('Please select a category!');
-      return;
-    }
-
-    if (form.gender.trim() === '') {
-      setError('Please enter gender (male/female/other)!');
-      return;
-    }
-
-    if (form.age.trim() === '') {
-      setError('Please enter age!');
-      return;
-    }
-
-    if (form.price.trim() === '') {
-      setError('Please enter price!');
-      return;
-    }
-
-    if (form.discount.trim() === '') {
-      setError('Please enter discount percentage!');
-      return;
-    }
-
-    // Validation: Check gender constraints (only male, female, other allowed)
-    const validGenders = ['male', 'female', 'other'];
-    if (!validGenders.includes(form.gender.trim().toLowerCase())) {
-      setError('Gender must be male, female, or other!');
-      return;
-    }
-
-    // Validation: Check age constraints
-    const age = parseInt(form.age);
-    if (isNaN(age) || age <= 0) {
-      setError('Age must be a positive number greater than 0!');
-      return;
-    }
-
-    // Validation: Check price constraints
-    const price = parseFloat(form.price);
-    if (isNaN(price) || price <= 0) {
-      setError('Price must be a number greater than 0!');
-      return;
-    }
-
-    // Validation: Check discount constraints
-    const discount = parseFloat(form.discount);
-    if (isNaN(discount) || discount < 0 || discount > 100) {
-      setError('Discount must be a number between 0 and 100!');
-      return;
-    }
-
-    // All validations passed, add the entry
-    onAdd({ ...form, id: Date.now() });
+    // Stores all the grid entries in a variable
+    const allEntries = entries;
     
-    // Clear the form
-    setForm({ category: '', gender: '', age: '', price: '', discount: '' });
+    // Check for gender errors in all 5 rows
+    const hasGenderError = allEntries.some(entry => {
+      const gender = entry.gender.trim().toLowerCase();
+      const validGenders = ['male', 'female', 'other'];
+      return !validGenders.includes(gender);
+    });
+    
+    if (hasGenderError) {
+      setGridError('Please enter female, male or other for gender in all rows!');
+      return;
+    }
+    
+    // Check for age errors in all 5 rows
+    const hasAgeError = allEntries.some(entry => {
+      const age = parseInt(entry.age);
+      return isNaN(age) || age <= 0;
+    });
+    
+    if (hasAgeError) {
+      setGridError('Please enter age > 0 in all rows!');
+      return;
+    }
+    
+    // Check for price errors in all 5 rows
+    const hasPriceError = allEntries.some(entry => {
+      const price = parseFloat(entry.price);
+      return isNaN(price) || price <= 0;
+    });
+    
+    if (hasPriceError) {
+      setGridError('Please enter price > 0 in all rows!');
+      return;
+    }
+    
+    // Check for discount errors in all 5 rows
+    const hasDiscountError = allEntries.some(entry => {
+      const discount = parseFloat(entry.discount);
+      return isNaN(discount) || discount <= 0 || discount > 100;
+    });
+    
+    if (hasDiscountError) {
+      setGridError('Please enter discount > 0 and <= 100 in all rows!');
+      return;
+    }
+    
+    // Adds up all grid entries to the main data list
+    entries.forEach(entry => {
+      onAdd(entry);
+    });
+    
+    setShowGrid(false);
 
     // Navigate to details page after successful addition
     navigate('/details');
   };
 
+  // Handle grid cancellation
+  const handleGridCancel = () => {
+    setShowGrid(false);
+  };
+
+  // Handle grid error
+  const handleGridError = (errorMessage) => {
+    setGridError(errorMessage);
+  };
+
   return (
     <div className="container mt-5">
-      <h1 className="text-center mb-4">Product Entry Table</h1>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div></div>
+        <h1 className="text-center">Product Entry Table</h1>
+        <div style={{ width: '100px' }}>
+          {!showGrid && (
+            <button 
+              type="button" 
+              className="btn btn-primary btn-lg"
+              onClick={handleAdd}>Add</button>
+          )}
+        </div>
+      </div>
       
-      {error && (
+      {gridError && (
         <div className="alert alert-danger" role="alert">
-          {error}
+          {gridError}
         </div>
       )}
 
-      <form onSubmit={handleAdd}>
-        <div className="row">
-          <div className="col-md-2">
-            <div className="form-group">
-              <label htmlFor="category">Category:</label>
-              <select
-                className="form-control"
-                id="category"
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-              >
-                <option value="">--Select Category--</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Clothing">Clothing</option>
-                <option value="Books">Books</option>
-                <option value="Home & Garden">Home & Garden</option>
-                <option value="Sports">Sports</option>
-                <option value="Toys">Toys</option>
-                <option value="Automotive">Automotive</option>
-                <option value="Health & Beauty">Health & Beauty</option>
-                <option value="Food & Beverages">Food & Beverages</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-          
-          <div className="col-md-2">
-            <div className="form-group">
-              <label htmlFor="gender">Gender:</label>
-              <input
-                type="text"
-                className="form-control"
-                id="gender"
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                placeholder="male/female/other"
-              />
-            </div>
-          </div>
-          
-          <div className="col-md-2">
-            <div className="form-group">
-              <label htmlFor="age">Age:</label>
-              <input
-                type="number"
-                className="form-control"
-                id="age"
-                name="age"
-                value={form.age}
-                onChange={handleChange}
-                placeholder="Enter age"
-              />
-            </div>
-          </div>
-          
-          <div className="col-md-2">
-            <div className="form-group">
-              <label htmlFor="price">Price:</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-control"
-                id="price"
-                name="price"
-                value={form.price}
-                onChange={handleChange}
-                placeholder="Enter price"
-              />
-            </div>
-          </div>
-          
-          <div className="col-md-2">
-            <div className="form-group">
-              <label htmlFor="discount">Discount (%):</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-control"
-                id="discount"
-                name="discount"
-                value={form.discount}
-                onChange={handleChange}
-                placeholder="0-100"
-              />
-            </div>
-          </div>
-          
-          <div className="col-md-2">
-            <div className="form-group">
-              <label>&nbsp;</label>
-              <button type="submit" className="btn btn-primary form-control">
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </form>
+      {/* Render DataGrid component when showGrid is true */}
+      {showGrid && (
+        <DataGrid 
+          key={gridKey}
+          onGridSubmit={handleGridSubmit}
+          onCancel={handleGridCancel}
+          onGridError={handleGridError}
+        />
+      )}
     </div>
   );
 }

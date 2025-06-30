@@ -8,7 +8,23 @@ function App() {
 
   // Add a new entry and navigate to list page
   const handleAddEntry = (entry) => {
-    setEntries(prev => [...prev, entry]);
+    setEntries(prevEntries => [...prevEntries, entry]);
+  };
+
+  // Update an existing entry
+  const handleUpdateEntry = (id, updatedData) => {
+    setEntries(prevEntries => 
+      prevEntries.map(entry => 
+        entry.id === id ? { ...entry, ...updatedData } : entry
+      )
+    );
+  };
+
+  // Delete an entry
+  const handleDeleteEntry = (id) => {
+    setEntries(prevEntries => 
+      prevEntries.filter(entry => entry.id !== id)
+    );
   };
 
   return (
@@ -21,7 +37,13 @@ function App() {
           />
           <Route 
             path="/details" 
-            element={<ProductListPage entries={entries} />} 
+            element={
+              <ProductListPage 
+                entries={entries} 
+                onUpdateEntry={handleUpdateEntry}
+                onDeleteEntry={handleDeleteEntry}
+              />
+            } 
           />
           <Route 
             path="*" 
