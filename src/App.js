@@ -8,7 +8,11 @@ function App() {
 
   // Add a new entry and navigate to list page
   const handleAddEntry = (entry) => {
-    setEntries(prevEntries => [...prevEntries, entry]);
+    const newEntry = {
+      ...entry,
+      id: Date.now() + Math.random() // Create unique ID
+    };
+    setEntries(prevEntries => [...prevEntries, newEntry]);
   };
 
   // Update an existing entry

@@ -43,7 +43,7 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
 
   // Handle edit form submission
   const handleEditSubmit = () => {
-    if (onUpdateEntry && selectedEntry) {
+    if (onUpdateEntry && selectedEntry && selectedEntry.id) {
       onUpdateEntry(selectedEntry.id, editForm);
     }
     setShowEditModal(false);
@@ -53,7 +53,7 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
 
   // Handle delete confirmation
   const handleDeleteConfirm = () => {
-    if (onDeleteEntry && selectedEntry) {
+    if (onDeleteEntry && selectedEntry && selectedEntry.id) {
       onDeleteEntry(selectedEntry.id);
     }
     setShowDeleteModal(false);
@@ -93,7 +93,7 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
             </thead>
             <tbody>
               {safeEntries.map((entry, idx) => (
-                <tr key={entry.id || idx}>
+                <tr key={entry.id}>
                   <td>{idx + 1}</td>
                   <td>{entry.category || 'N/A'}</td>
                   <td>{entry.gender || 'N/A'}</td>
