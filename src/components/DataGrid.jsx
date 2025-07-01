@@ -1,29 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function DataGrid({ onGridSubmit, onCancel, onGridError, formData }) {
-  // State to store 5 rows of 5 text field values each
-  const [textFields, setTextFields] = useState(
-    Array(5).fill().map(() => Array(5).fill(''))
-  );
-  
-  // State for error message (only for field filling validation)
-  const [error, setError] = useState('');
-
-  // Reset textFields when component mounts (new key)
-  useEffect(() => {
-    setTextFields(Array(5).fill().map(() => Array(5).fill('')));
-    setError('');
-  }, []);
-
-  // Handle text field changes
-  const handleTextFieldChange = (rowIndex, colIndex, value) => {
-    const newTextFields = [...textFields];
-    newTextFields[rowIndex][colIndex] = value;
-    setTextFields(newTextFields);
-    setError(''); // Clear error when user starts typing
-  };
-
+function DataGrid({ rows, onRowChange }) {
   // Get input type and constraints for all rows based on form data
   const getConstraints = (colIndex) => {
     switch(colIndex) {
@@ -57,34 +35,30 @@ function DataGrid({ onGridSubmit, onCancel, onGridError, formData }) {
     }
   };
 
-  // Rendering of the input fields based on constraints
+  // Render input field for each cell
   const renderInputField = (rowIndex, colIndex, value) => {
     const constraints = getConstraints(colIndex);
-    
-    // Render either a dropdown or input field based on the field type
+    const fieldNames = ['category', 'gender', 'age', 'price', 'discount'];
+    const field = fieldNames[colIndex];
     if (constraints.type === 'select') {
-      // Rendering the dropdown for category selection
       return (
         <select
           className="form-control"
           value={value}
-          onChange={(e) => handleTextFieldChange(rowIndex, colIndex, e.target.value)}
+          onChange={e => onRowChange(rowIndex, field, e.target.value)}
         >
           {constraints.options.map((option, idx) => (
-            <option key={idx} value={option.value}>
-              {option.label}
-            </option>
+            <option key={idx} value={option.value}>{option.label}</option>
           ))}
         </select>
       );
     } else {
-      // Rendering the regular input field for other data types
       return (
         <input
           type={constraints.type}
           className="form-control"
           value={value}
-          onChange={(e) => handleTextFieldChange(rowIndex, colIndex, e.target.value)}
+          onChange={e => onRowChange(rowIndex, field, e.target.value)}
           placeholder={constraints.placeholder}
           step={constraints.step}
         />
@@ -92,39 +66,8 @@ function DataGrid({ onGridSubmit, onCancel, onGridError, formData }) {
     }
   };
 
-  // Handle submitting the text fields
-  const handleSubmit = () => {
-    // Check if all fields are filled
-    const allFilled = textFields.every(row => 
-      row.every(field => field.trim() !== '')
-    );
-    
-    if (!allFilled) {
-      setError('Please fill all text fields before submitting!');
-      return;
-    }
-
-    // Convert the 5x5 grid data into 5 separate entries
-    const entries = textFields.map((row, index) => ({
-      id: Date.now() + index,
-      category: row[0],
-      gender: row[1],
-      age: row[2],
-      price: row[3],
-      discount: row[4]
-    }));
-
-    onGridSubmit(entries);
-  };
-
   return (
     <div className="mt-4">
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
       {/* Column Headers */}
       <div className="row mb-3">
         <div className="col-md-2">
@@ -143,10 +86,9 @@ function DataGrid({ onGridSubmit, onCancel, onGridError, formData }) {
           <h6 className="text-center font-weight-bold">Discount(%)</h6>
         </div>
       </div>
-
-      {textFields.map((row, rowIndex) => (
+      {rows.map((row, rowIndex) => (
         <div key={rowIndex} className="row mb-3">
-          {row.map((value, colIndex) => (
+          {Object.values(row).map((value, colIndex) => (
             <div key={colIndex} className="col-md-2">
               <div className="form-group">
                 {renderInputField(rowIndex, colIndex, value)}
@@ -155,19 +97,8 @@ function DataGrid({ onGridSubmit, onCancel, onGridError, formData }) {
           ))}
         </div>
       ))}
-      
-      <div className="text-center mt-3">
-        <button 
-          type="button" 
-          className="btn btn-success me-2"
-          onClick={handleSubmit}>Submit All Data</button>
-        <button 
-          type="button" 
-          className="btn btn-secondary"
-          onClick={onCancel}>Cancel</button>
-      </div>
     </div>
   );
 }
 
-export default DataGrid; 
+export default DataGrid;

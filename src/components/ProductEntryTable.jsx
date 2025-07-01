@@ -6,93 +6,59 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 function ProductEntryTable({ onAdd }) {
   const navigate = useNavigate();
 
-  // State to control showing the 5x5 grid
-  const [showGrid, setShowGrid] = useState(false);
-  
-  // State to force DataGrid re-render
-  const [gridKey, setGridKey] = useState(0);
-
-  // State for grid error message
+  // State to hold all product rows
+  const [rows, setRows] = useState([]);
+  // State for error message
   const [gridError, setGridError] = useState('');
 
-  // Handle Add button click - directly show the grid
-  const handleAdd = () => {
-    setGridKey(prev => prev + 1);
-    setShowGrid(true);
+  // Add a new empty row
+  const handleAddRow = () => {
+    setRows(prev => [...prev, { category: '', gender: '', age: '', price: '', discount: '' }]);
+    setGridError('');
   };
 
-  // Handle grid submission from DataGrid component
-  const handleGridSubmit = (entries) => {
-    // Clear any grid errors messages
+  // Handle input change for a specific row
+  const handleRowChange = (index, field, value) => {
+    setRows(prev => prev.map((row, i) => i === index ? { ...row, [field]: value } : row));
     setGridError('');
-    
-    // Stores all the grid entries in a variable
-    const allEntries = entries;
-    
-    // Check for gender errors in all 5 rows
-    const hasGenderError = allEntries.some(entry => {
+  };
+
+  // Handle submit all
+  const handleSubmitAll = () => {
+    // Validation
+    for (let i = 0; i < rows.length; i++) {
+      const entry = rows[i];
+      if (!entry.category || !entry.gender || !entry.age || !entry.price || !entry.discount) {
+        setGridError('Please fill all fields in every row before submitting!');
+        return;
+      }
       const gender = entry.gender.trim().toLowerCase();
       const validGenders = ['male', 'female', 'other'];
-      return !validGenders.includes(gender);
-    });
-    
-    if (hasGenderError) {
-      setGridError('Please enter female, male or other for gender in all rows!');
-      return;
-    }
-    
-    // Check for age errors in all 5 rows
-    const hasAgeError = allEntries.some(entry => {
+      if (!validGenders.includes(gender)) {
+        setGridError('Please enter female, male or other for gender in all rows!');
+        return;
+      }
       const age = parseInt(entry.age);
-      return isNaN(age) || age <= 0;
-    });
-    
-    if (hasAgeError) {
-      setGridError('Please enter age > 0 in all rows!');
-      return;
-    }
-    
-    // Check for price errors in all 5 rows
-    const hasPriceError = allEntries.some(entry => {
+      if (isNaN(age) || age <= 0) {
+        setGridError('Please enter age > 0 in all rows!');
+        return;
+      }
       const price = parseFloat(entry.price);
-      return isNaN(price) || price <= 0;
-    });
-    
-    if (hasPriceError) {
-      setGridError('Please enter price > 0 in all rows!');
-      return;
-    }
-    
-    // Check for discount errors in all 5 rows
-    const hasDiscountError = allEntries.some(entry => {
+      if (isNaN(price) || price <= 0) {
+        setGridError('Please enter price > 0 in all rows!');
+        return;
+      }
       const discount = parseFloat(entry.discount);
-      return isNaN(discount) || discount <= 0 || discount > 100;
-    });
-    
-    if (hasDiscountError) {
-      setGridError('Please enter discount > 0 and <= 100 in all rows!');
-      return;
+      if (isNaN(discount) || discount <= 0 || discount > 100) {
+        setGridError('Please enter discount > 0 and <= 100 in all rows!');
+        return;
+      }
     }
-    
-    // Adds up all grid entries to the main data list
-    entries.forEach(entry => {
-      onAdd(entry);
-    });
-    
-    setShowGrid(false);
-
-    // Navigate to details page after successful addition
+    // Submit all rows
+    rows.forEach(entry => onAdd(entry));
+    setRows([]); // Clear rows after submit
+    setGridError('');
     navigate('/details');
-  };
-
-  // Handle grid cancellation
-  const handleGridCancel = () => {
-    setShowGrid(false);
-  };
-
-  // Handle grid error
-  const handleGridError = (errorMessage) => {
-    setGridError(errorMessage);
   };
 
   return (
@@ -101,29 +67,28 @@ function ProductEntryTable({ onAdd }) {
         <div></div>
         <h1 className="text-center">Product Entry Table</h1>
         <div style={{ width: '100px' }}>
-          {!showGrid && (
-            <button 
-              type="button" 
-              className="btn btn-primary btn-lg"
-              onClick={handleAdd}>Add</button>
-          )}
+          <button 
+            type="button" 
+            className="btn btn-primary btn-lg"
+            onClick={handleAddRow}>Add</button>
         </div>
       </div>
-      
       {gridError && (
         <div className="alert alert-danger" role="alert">
           {gridError}
         </div>
       )}
-
-      {/* Render DataGrid component when showGrid is true */}
-      {showGrid && (
-        <DataGrid 
-          key={gridKey}
-          onGridSubmit={handleGridSubmit}
-          onCancel={handleGridCancel}
-          onGridError={handleGridError}
-        />
+      <DataGrid 
+        rows={rows}
+        onRowChange={handleRowChange}
+      />
+      {rows.length > 0 && (
+        <div className="text-center mt-3">
+          <button 
+            type="button" 
+            className="btn btn-success me-2"
+            onClick={handleSubmitAll}>Submit All</button>
+        </div>
       )}
     </div>
   );
