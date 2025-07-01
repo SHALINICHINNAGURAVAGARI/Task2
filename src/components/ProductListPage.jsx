@@ -14,7 +14,8 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [editForm, setEditForm] = useState({});
-  const [gridError, setGridError] = useState('');
+  // State for edit modal error
+  const [editError, setEditError] = useState("");
 
   // Handle view button click
   const handleView = (entry) => {
@@ -26,11 +27,11 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
   const handleEdit = (entry) => {
     setSelectedEntry(entry);
     setEditForm({
-      category: entry.category,
-      gender: entry.gender,
-      age: entry.age,
-      price: entry.price,
-      discount: entry.discount
+      category: entry.category || "",
+      gender: entry.gender || "",
+      age: entry.age !== undefined && entry.age !== null ? String(entry.age) : "",
+      price: entry.price !== undefined && entry.price !== null ? String(entry.price) : "",
+      discount: entry.discount !== undefined && entry.discount !== null ? String(entry.discount) : ""
     });
     setShowEditModal(true);
   };
@@ -43,6 +44,20 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
 
   // Handle edit form submission
   const handleEditSubmit = () => {
+    // Validation
+    if (!editForm.age || isNaN(Number(editForm.age)) || Number(editForm.age) <= 0) {
+      setEditError("Age must be greater than 0.");
+      return;
+    }
+    if (!editForm.price || isNaN(Number(editForm.price)) || Number(editForm.price) <= 0) {
+      setEditError("Price must be greater than 0.");
+      return;
+    }
+    if (!editForm.discount || isNaN(Number(editForm.discount)) || Number(editForm.discount) <= 0 || Number(editForm.discount) >= 100) {
+      setEditError("Discount must be above 0 and below 100.");
+      return;
+    }
+    setEditError("");
     if (onUpdateEntry && selectedEntry && selectedEntry.id) {
       onUpdateEntry(selectedEntry.id, editForm);
     }
@@ -120,12 +135,6 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
         </div>
       )}
 
-      {gridError && (
-        <div className="alert alert-danger" role="alert">
-          {gridError}
-        </div>
-      )}
-
       {/* View Modal */}
       {showViewModal && selectedEntry && (
         <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
@@ -169,11 +178,13 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Edit Product</h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => setShowEditModal(false)}></button>
               </div>
+              {/* Alert below heading */}
+              {editError && (
+                <div className="alert alert-danger" role="alert">
+                  {editError}
+                </div>
+              )}
               <div className="modal-body">
                 <div className="row">
                   <div className="col-md-6 mb-3">
@@ -217,7 +228,12 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       value={editForm.age}
                       onChange={e => {
                         const filtered = e.target.value.replace(/[eE]/g, '');
-                        handleEditChange({ ...e, target: { ...e.target, value: filtered } });
+                        setEditForm(prev => ({ ...prev, [e.target.name]: filtered }));
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'e' || e.key === 'E') {
+                          e.preventDefault();
+                        }
                       }}
                       placeholder="Enter age"
                     />
@@ -232,7 +248,12 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       value={editForm.price}
                       onChange={e => {
                         const filtered = e.target.value.replace(/[eE]/g, '');
-                        handleEditChange({ ...e, target: { ...e.target, value: filtered } });
+                        setEditForm(prev => ({ ...prev, [e.target.name]: filtered }));
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'e' || e.key === 'E') {
+                          e.preventDefault();
+                        }
                       }}
                       placeholder="Enter price"
                     />
@@ -247,7 +268,12 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       value={editForm.discount}
                       onChange={e => {
                         const filtered = e.target.value.replace(/[eE]/g, '');
-                        handleEditChange({ ...e, target: { ...e.target, value: filtered } });
+                        setEditForm(prev => ({ ...prev, [e.target.name]: filtered }));
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'e' || e.key === 'E') {
+                          e.preventDefault();
+                        }
                       }}
                       placeholder="0-100"
                     />

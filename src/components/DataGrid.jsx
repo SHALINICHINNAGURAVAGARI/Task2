@@ -59,11 +59,12 @@ function DataGrid({ rows, onRowChange }) {
           className="form-control"
           value={value}
           onChange={e => {
-            let v = e.target.value;
-            if (constraints.type === 'number') {
-              v = v.replace(/[eE]/g, '');
+            onRowChange(rowIndex, field, e.target.value);
+          }}
+          onKeyDown={e => {
+            if (constraints.type === 'number' && (e.key === 'e' || e.key === 'E')) {
+              e.preventDefault();
             }
-            onRowChange(rowIndex,field,v)
           }}
           placeholder={constraints.placeholder}
           step={constraints.step}
