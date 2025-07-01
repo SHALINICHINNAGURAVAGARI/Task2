@@ -63,7 +63,7 @@ function DataGrid({ rows, onRowChange }) {
             if (constraints.type === 'number') {
               v = v.replace(/[eE]/g, '');
             }
-            onRowChange(rowIndex, field, v);
+            onRowChange(rowIndex,field,v)
           }}
           placeholder={constraints.placeholder}
           step={constraints.step}

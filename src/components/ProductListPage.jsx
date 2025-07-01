@@ -246,7 +246,7 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       name="discount"
                       value={editForm.discount}
                       onChange={e => {
-                        const filtered = e.target.value.replace(/[eE\+\-]/g, '');
+                        const filtered = e.target.value.replace(/[eE]/g, '');
                         handleEditChange({ ...e, target: { ...e.target, value: filtered } });
                       }}
                       placeholder="0-100"
