@@ -215,7 +215,10 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       className="form-control"
                       name="age"
                       value={editForm.age}
-                      onChange={handleEditChange}
+                      onChange={e => {
+                        const filtered = e.target.value.replace(/[eE]/g, '');
+                        handleEditChange({ ...e, target: { ...e.target, value: filtered } });
+                      }}
                       placeholder="Enter age"
                     />
                   </div>
@@ -227,7 +230,10 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       className="form-control"
                       name="price"
                       value={editForm.price}
-                      onChange={handleEditChange}
+                      onChange={e => {
+                        const filtered = e.target.value.replace(/[eE]/g, '');
+                        handleEditChange({ ...e, target: { ...e.target, value: filtered } });
+                      }}
                       placeholder="Enter price"
                     />
                   </div>
@@ -239,7 +245,10 @@ function ProductListPage({ entries, onUpdateEntry, onDeleteEntry }) {
                       className="form-control"
                       name="discount"
                       value={editForm.discount}
-                      onChange={handleEditChange}
+                      onChange={e => {
+                        const filtered = e.target.value.replace(/[eE\+\-]/g, '');
+                        handleEditChange({ ...e, target: { ...e.target, value: filtered } });
+                      }}
                       placeholder="0-100"
                     />
                   </div>
