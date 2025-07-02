@@ -59,35 +59,25 @@ function ProductEntryTable({ onAdd }) {
     // Validation
     for (let i = 0; i < rows.length; i++) {
       const entry = rows[i];
-      // Check gender first (since it's a text field with specific values)
-      const gender = entry.gender ? entry.gender.trim().toLowerCase() : '';
-      const validGenders = ['male', 'female', 'other'];
-      if (!validGenders.includes(gender)) {
-        setGridError('Please enter female, male or other for gender in all rows!');
-        return;
-      }
-      // Check age
-      const age = parseInt(entry.age);
-      if (isNaN(age) || age <= 0) {
-        setGridError('Please enter age > 0 in all rows!');
-        return;
-      }
-      // Check price
-      const price = parseFloat(entry.price);
-      if (isNaN(price) || price <= 0) {
-        setGridError('Please enter price > 0 in all rows!');
-        return;
-      }
-      // Check discount
-      const discount = parseFloat(entry.discount);
-      if (isNaN(discount) || discount <= 0 || discount > 100) {
-        setGridError('Please enter discount > 0 and <= 100 in all rows!');
-        return;
-      }
-      // Check for empty fields last
       if (!entry.category || !entry.gender || !entry.age || !entry.price || !entry.discount) {
         setGridError('Please fill all fields in every row before submitting!');
         return;
+      } else if (isNaN(parseInt(entry.age)) || parseInt(entry.age) <= 0) {
+        setGridError('Please enter age > 0 in all rows!');
+        return;
+      } else if (isNaN(parseFloat(entry.price)) || parseFloat(entry.price) <= 0) {
+        setGridError('Please enter price > 0 in all rows!');
+        return;
+      } else if (isNaN(parseFloat(entry.discount)) || parseFloat(entry.discount) <= 0 || parseFloat(entry.discount) > 100) {
+        setGridError('Please enter discount > 0 and <= 100 in all rows!');
+        return;
+      } else {
+        const gender = entry.gender ? entry.gender.trim().toLowerCase() : '';
+        const validGenders = ['male', 'female', 'other'];
+        if (!validGenders.includes(gender)) {
+          setGridError('Please enter female, male or other for gender in all rows!');
+          return;
+        }
       }
     }
     // Submit all rows
