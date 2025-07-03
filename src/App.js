@@ -1,62 +1,74 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import ProductEntryTable from './components/ProductEntryTable.jsx';
 import ProductListPage from './components/ProductListPage.jsx';
 
-function App() {
-  const [entries, setEntries] = useState([]);
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      entries: []
+    };
+    this.handleAddEntry = this.handleAddEntry.bind(this);
+    this.handleUpdateEntry = this.handleUpdateEntry.bind(this);
+    this.handleDeleteEntry = this.handleDeleteEntry.bind(this);
+  }
 
-  // Add a new entry and navigate to list page
-  const handleAddEntry = (entry) => {
+  handleAddEntry(entry) {
     const newEntry = {
       ...entry,
       id: Date.now() + Math.random() // Create unique ID
     };
-    setEntries(prevEntries => [...prevEntries, newEntry]);
-  };
+    this.setState(prevState => ({
+      entries: [...prevState.entries, newEntry]
+    }));
+  }
 
-  // Update an existing entry
-  const handleUpdateEntry = (id, updatedData) => {
-    setEntries(prevEntries => 
-      prevEntries.map(entry => 
+  handleUpdateEntry(id, updatedData) {
+    this.setState(prevState => ({
+      entries: prevState.entries.map(entry =>
         entry.id === id ? { ...entry, ...updatedData } : entry
       )
-    );
-  };
+    }));
+  }
 
-  // Delete an entry
-  const handleDeleteEntry = (id) => {
-    setEntries(prevEntries => 
-      prevEntries.filter(entry => entry.id !== id)
-    );
-  };
+  handleDeleteEntry(id) {
+    this.setState(prevState => ({
+      entries: prevState.entries.filter(entry => entry.id !== id)
+    }));
+  }
 
-  return (
-    <Router>
-    <div className="App">
+  render() {
+    return (
+      <div className="App">
         <Routes>
-          <Route 
-            path="/" 
-            element={<ProductEntryTable onAdd={handleAddEntry} />} 
+          <Route
+            path="/"
+            element={<ProductEntryTable onAdd={this.handleAddEntry} navigate={this.props.navigate} />}
           />
-          <Route 
-            path="/details" 
+          <Route
+            path="/details"
             element={
-              <ProductListPage 
-                entries={entries} 
-                onUpdateEntry={handleUpdateEntry}
-                onDeleteEntry={handleDeleteEntry}
+              <ProductListPage
+                entries={this.state.entries}
+                onUpdateEntry={this.handleUpdateEntry}
+                onDeleteEntry={this.handleDeleteEntry}
               />
-            } 
+            }
           />
-          <Route 
-            path="*" 
-            element={<Navigate to="/" replace />} 
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
           />
         </Routes>
-    </div>
-    </Router>
-  );
+      </div>
+    );
+  }
 }
 
-export default App;
+function AppWrapper() {
+  const navigate = useNavigate();
+  return <App navigate={navigate} />;
+}
+
+export default AppWrapper;
