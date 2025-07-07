@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function ProductEntryTable({ onAdd }) {
-  const navigate = useNavigate();
+function UploadImage() {
   const [rows, setRows] = useState([
-    { category: '', gender: '', price: '', discount: '', image: null }
+    { category: '', gender: '', price: '', discount: '', image: null, imageUrl: '' }
   ]);
   const [error, setError] = useState('');
 
@@ -15,12 +13,19 @@ function ProductEntryTable({ onAdd }) {
   };
 
   const handleImageChange = (index, file) => {
-    setRows(prev => prev.map((row, i) => i === index ? { ...row, image: file } : row));
-    setError('');
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setRows(prev => prev.map((row, i) =>
+        i === index ? { ...row, image: file, imageUrl: reader.result } : row
+      ));
+    };
+    if (file) {
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleAddRow = () => {
-    setRows(prev => [...prev, { category: '', gender: '', price: '', discount: '', image: null }]);
+    setRows(prev => [...prev, { category: '', gender: '', price: '', discount: '', image: null, imageUrl: '' }]);
     setError('');
   };
 
@@ -41,16 +46,15 @@ function ProductEntryTable({ onAdd }) {
       }
     }
     setError('');
-    rows.forEach(entry => onAdd(entry));
-    setRows([{ category: '', gender: '', price: '', discount: '', image: null }]);
-    navigate('/details');
+    alert('Submitted successfully!');
+    setRows([{ category: '', gender: '', price: '', discount: '', image: null, imageUrl: '' }]);
   };
 
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div></div>
-        <h1 className="text-center">Product Entry Table</h1>
+        <h1 className="text-center">Upload Image Table</h1>
         <div style={{ width: '100px' }}>
           <button
             type="button"
@@ -137,6 +141,9 @@ function ProductEntryTable({ onAdd }) {
                 className="form-control"
                 onChange={e => handleImageChange(rowIndex, e.target.files[0])}
               />
+              {row.imageUrl && (
+                <img src={row.imageUrl} alt="Preview" style={{ maxWidth: 80, maxHeight: 80, marginTop: 5 }} />
+              )}
             </div>
           </div>
         ))}
@@ -154,5 +161,4 @@ function ProductEntryTable({ onAdd }) {
   );
 }
 
-export default ProductEntryTable; 
- 
+export default UploadImage; 

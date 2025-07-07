@@ -1,8 +1,8 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-class DataGrid extends React.Component {
-  getConstraints(colIndex) {
+function DataGrid({ rows, onRowChange }) {
+  const getConstraints = (colIndex) => {
     switch(colIndex) {
       case 0:
         return {
@@ -32,10 +32,10 @@ class DataGrid extends React.Component {
       default:
         return { type: 'text' };
     }
-  }
+  };
 
-  renderInputField(rowIndex, colIndex, value) {
-    const constraints = this.getConstraints(colIndex);
+  const renderInputField = (rowIndex, colIndex, value) => {
+    const constraints = getConstraints(colIndex);
     const fieldNames = ['category', 'gender', 'age', 'price', 'discount'];
     const field = fieldNames[colIndex];
     if (constraints.type === 'select') {
@@ -43,7 +43,7 @@ class DataGrid extends React.Component {
         <select
           className="form-control"
           value={value}
-          onChange={e => this.props.onRowChange(rowIndex, field, e.target.value)}
+          onChange={e => onRowChange(rowIndex, field, e.target.value)}
         >
           {constraints.options.map((option, idx) => (
             <option key={idx} value={option.value}>{option.label}</option>
@@ -56,9 +56,7 @@ class DataGrid extends React.Component {
           type={constraints.type}
           className="form-control"
           value={value}
-          onChange={e => {
-            this.props.onRowChange(rowIndex, field, e.target.value);
-          }}
+          onChange={e => onRowChange(rowIndex, field, e.target.value)}
           onKeyDown={e => {
             if (constraints.type === 'number' && (e.key === 'e' || e.key === 'E')) {
               e.preventDefault();
@@ -69,44 +67,41 @@ class DataGrid extends React.Component {
         />
       );
     }
-  }
+  };
 
-  render() {
-    const { rows } = this.props;
-    return (
-      <div className="mt-4">
-        {/* Column Headers */}
-        <div className="row mb-3">
-          <div className="col-md-2">
-            <h6 className="text-center font-weight-bold">Category</h6>
-          </div>
-          <div className="col-md-2">
-            <h6 className="text-center font-weight-bold">Gender</h6>
-          </div>
-          <div className="col-md-2">
-            <h6 className="text-center font-weight-bold">Age</h6>
-          </div>
-          <div className="col-md-2">
-            <h6 className="text-center font-weight-bold">Price</h6>
-          </div>
-          <div className="col-md-2">
-            <h6 className="text-center font-weight-bold">Discount(%)</h6>
-          </div>
+  return (
+    <div className="mt-4">
+      {/* Column Headers */}
+      <div className="row mb-3">
+        <div className="col-md-2">
+          <h6 className="text-center font-weight-bold">Category</h6>
         </div>
-        {rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="row mb-3">
-            {Object.values(row).map((value, colIndex) => (
-              <div key={colIndex} className="col-md-2">
-                <div className="form-group">
-                  {this.renderInputField(rowIndex, colIndex, value)}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
+        <div className="col-md-2">
+          <h6 className="text-center font-weight-bold">Gender</h6>
+        </div>
+        <div className="col-md-2">
+          <h6 className="text-center font-weight-bold">Age</h6>
+        </div>
+        <div className="col-md-2">
+          <h6 className="text-center font-weight-bold">Price</h6>
+        </div>
+        <div className="col-md-2">
+          <h6 className="text-center font-weight-bold">Discount(%)</h6>
+        </div>
       </div>
-    );
-  }
+      {rows.map((row, rowIndex) => (
+        <div key={rowIndex} className="row mb-3">
+          {Object.values(row).map((value, colIndex) => (
+            <div key={colIndex} className="col-md-2">
+              <div className="form-group">
+                {renderInputField(rowIndex, colIndex, value)}
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default DataGrid;
